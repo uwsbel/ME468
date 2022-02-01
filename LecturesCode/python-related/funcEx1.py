@@ -5,8 +5,8 @@ def my_func(a):
     return a*a + 1
 
 # function q passed like any other object
-def apply_func(q, a):
-    return q(a)
+def apply_func(q, b):
+    return q(b)
 
 # call a function, with another function as argument
 print(apply_func(my_func, 3))

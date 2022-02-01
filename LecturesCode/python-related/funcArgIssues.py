@@ -1,7 +1,7 @@
-def argListAspects(intArg, listArg):
-    intArg = 2  # now the name intArg points to object "2"
-    listArg.append('d') # the mutable list object changed here
-    print('Inside the function:', intArg, listArg)
+def argListAspects(firstArg, secondArg):
+    firstArg += 9  # now the name firstArg points to object "10"
+    secondArg.append('d') # the mutable list object changed here
+    print('Inside the function:', firstArg, secondArg)
 
 def main():
     i = 1
