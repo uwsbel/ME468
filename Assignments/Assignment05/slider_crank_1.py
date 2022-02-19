@@ -129,8 +129,8 @@ slider.AddAsset(col_s)
 ## Define two quaternions representing:
 ## - a rotation of -90 degrees around x (z2y)
 ## - a rotation of +90 degrees around y (z2x)
-z2y = Q_from_AngX(-chrono.CH_C_PI / 2)
-z2x = Q_from_AngY(chrono.CH_C_PI / 2)
+z2y = chrono.Q_from_AngX(-chrono.CH_C_PI / 2)
+z2x = chrono.Q_from_AngY(chrono.CH_C_PI / 2)
 
   #### -------------------------------------------------------------------------
   #### EXERCISE 1.2
@@ -171,15 +171,13 @@ system.ShowHierarchy(chrono.GetLog())
 ## Create the Irrlicht application and set-up the camera.
 application = chronoirr.ChIrrApp (
         system,                               ## pointer to the mechanical system
-        "Slider-Crank Demo 1",                ## title of the Irrlicht window
+        "Slider-Crank Exercise 1",            ## title of the Irrlicht window
         chronoirr.dimension2du(800, 600),     ## window dimension (width x height)
         chronoirr.VerticalDir_Z)              ## up direction
-application.AddTypicalLogo();
-application.AddTypicalSky();
-application.AddTypicalLights();
-application.AddTypicalCamera(
-        chronoirr.vector3df(2, 5, 0),         ## camera location
-        chronoirr.vector3df(2, 0, 0));        ## "look at" location
+application.AddTypicalLights()
+application.AddCamera(
+        chronoirr.vector3df(2, -5, 0),        ## camera location
+        chronoirr.vector3df(2, 0, 0))         ## "look at" location
 
 ## Let the Irrlicht application convert the visualization assets.
 application.AssetBindAll()
@@ -194,7 +192,7 @@ application.SetTryRealtime(True)
 while (application.GetDevice().run()):
 
     ## Initialize the graphical scene.
-    application.BeginScene()
+    application.BeginScene(True, True, chronoirr.SColor(255, 225, 225, 225))
     
     ## Render all visualization objects.
     application.DrawAll()
@@ -204,6 +202,7 @@ while (application.GetDevice().run()):
         application.GetVideoDriver(), 1, 1, 20, 20,
         chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_from_AngX(chrono.CH_C_PI_2)),
         chronoirr.SColor(255, 80, 100, 100), True)
+    chronoirr.drawAllCOGs(system, application.GetVideoDriver(), 1)
 
     ## Advance simulation by one step.
     application.DoStep()
