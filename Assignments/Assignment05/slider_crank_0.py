@@ -116,10 +116,8 @@ slider.AddAsset(col_s)
 ## Define two quaternions representing:
 ## - a rotation of -90 degrees around x (z2y)
 ## - a rotation of +90 degrees around y (z2x)
-z2y = chrono.ChQuaternionD() 
-z2x = chrono.ChQuaternionD()
-z2y.Q_from_AngAxis(-chrono.CH_C_PI / 2, chrono.ChVectorD(1, 0, 0))
-z2x.Q_from_AngAxis(chrono.CH_C_PI / 2, chrono.ChVectorD(0, 1, 0))
+z2y = Q_from_AngX(-chrono.CH_C_PI / 2)
+z2x = Q_from_AngY(chrono.CH_C_PI / 2)
 
 ## Revolute joint between ground and crank.
 ## The rotational axis of a revolute joint is along the Z axis of the
