@@ -158,10 +158,10 @@ z2x = Q_from_AngY(chrono.CH_C_PI / 2)
   #### EXERCISE 1.2
   #### Replace the revolute joint between ground and crank with a
   #### ChLinkMotorRotationSpeed element and enforce constant angular speed of
-  #### 90 degrees/s.
+  #### 180 degrees/s.
   #### -------------------------------------------------------------------------
 
-# Create a ChFunction object that always returns the constant value PI/2.
+# Create a ChFunction object that always returns the constant value PI.
 fun = chrono.ChFunction_Const()
 fun.Set_yconst(chrono.CH_C_PI)
 

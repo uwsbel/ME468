@@ -177,7 +177,7 @@ rod.AddAsset(col_r)
 z2y = Q_from_AngX(-chrono.CH_C_PI / 2)
 z2x = Q_from_AngY(chrono.CH_C_PI / 2)
 
-## Create a ChFunction object that always returns the constant value PI/2.
+## Create a ChFunction object that always returns the constant value PI.
 fun = chrono.ChFunction_Const()
 fun.Set_yconst(chrono.CH_C_PI)
 
