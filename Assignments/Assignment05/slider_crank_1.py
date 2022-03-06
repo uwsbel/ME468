@@ -12,15 +12,16 @@
 ## Author: Simone Benatti
 ## =============================================================================
 ##
-## Slider-crank Chrono tutorial (model 0)
+## Slider-crank Chrono tutorial (model 1)
 ##
-## This model is a 2-body slider-crank consisting of crank and slider bodies.
-## The crank is connected to ground with a revolute joint and the slider is
-## connected to ground through a prismatic joint.  A distance constraint models
-## a massless link between the crank and the slider. 
+## This model is a 3-body slider-crank consisting of crank, slider and connecting
+## rod bodies. The crank is connected to ground with a revolute joint and the
+## slider is connected to ground through a prismatic joint.  The connecting rod
+## connects to the crank through a spherical joint and to the slider through a
+## universal joint.
 ##
-## The mechanism moves under the action of gravity alone, acting in the negative
-## Z direction.
+## The crank body is driven at constant angular speed, under the action of gravity,
+## acting in the negative Z direction.
 ##
 ## The simulation is animated with Irrlicht.
 ##
@@ -53,11 +54,11 @@ ground.SetIdentifier(-1)
 ground.SetName("ground")
 ground.SetBodyFixed(True)
 
-cyl_g = chrono.ChCylinderShape()
+cyl_g = chrono.ChCylinderShape();
 cyl_g.GetCylinderGeometry().p1 = chrono.ChVectorD(0, 0.2, 0)
 cyl_g.GetCylinderGeometry().p2 = chrono.ChVectorD(0, -0.2, 0)
 cyl_g.GetCylinderGeometry().rad = 0.03
-ground.AddAsset(cyl_g)
+ground.AddAsset(cyl_g);
 
 col_g = chrono.ChColorAsset()
 col_g.SetColor(chrono.ChColor(0.6, 0.6, 0.2))
@@ -110,25 +111,36 @@ col_s = chrono.ChColorAsset()
 col_s.SetColor(chrono.ChColor(0.2, 0.2, 0.6))
 slider.AddAsset(col_s)
 
+  #### -------------------------------------------------------------------------
+  #### EXERCISE 1.1
+  #### Create a connecting rod body to replace the distance constraint.
+  #### This body should have:
+  ####    mass: 0.5
+  ####    moments of inertia:  I_xx = 0.005, I_yy = 0.1, I_zz = 0.1
+  ####    visualization: a green box with width and height 0.1
+  #### -------------------------------------------------------------------------
+
+
+
+
 ## 3. Create joint constraints.
 ##    All joint frames are specified in the global frame.
 
 ## Define two quaternions representing:
 ## - a rotation of -90 degrees around x (z2y)
 ## - a rotation of +90 degrees around y (z2x)
-z2y = chrono.ChQuaternionD() 
-z2x = chrono.ChQuaternionD()
-z2y.Q_from_AngAxis(-chrono.CH_C_PI / 2, chrono.ChVectorD(1, 0, 0))
-z2x.Q_from_AngAxis(chrono.CH_C_PI / 2, chrono.ChVectorD(0, 1, 0))
+z2y = chrono.Q_from_AngX(-chrono.CH_C_PI / 2)
+z2x = chrono.Q_from_AngY(chrono.CH_C_PI / 2)
 
-## Revolute joint between ground and crank.
-## The rotational axis of a revolute joint is along the Z axis of the
-## specified joint coordinate frame.  Here, we apply the 'z2y' rotation to
-## align it with the Y axis of the global reference frame.
-revolute_ground_crank = chrono.ChLinkLockRevolute()
-revolute_ground_crank.SetName("revolute_ground_crank")
-revolute_ground_crank.Initialize(ground, crank, chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), z2y))
-system.AddLink(revolute_ground_crank)
+  #### -------------------------------------------------------------------------
+  #### EXERCISE 1.2
+  #### Replace the revolute joint between ground and crank with a
+  #### ChLinkMotorRotationSpeed element and enforce constant angular speed of
+  #### 180 degrees/s.
+  #### -------------------------------------------------------------------------
+
+
+
 
 ## Prismatic joint between ground and slider.
 ## The translational axis of a prismatic joint is along the Z axis of the
@@ -139,61 +151,58 @@ prismatic_ground_slider.SetName("prismatic_ground_slider")
 prismatic_ground_slider.Initialize(ground, slider, chrono.ChCoordsysD(chrono.ChVectorD(2, 0, 0), z2x))
 system.AddLink(prismatic_ground_slider)
 
-## Distance constraint between crank and slider.
-## We provide the points on the two bodies in the global reference frame.
-## By default the imposed distance is calculated automatically as the distance
-## between these two points in the initial configuration.
-dist_crank_slider = chrono.ChLinkDistance()
-dist_crank_slider.SetName("dist_crank_slider")
-dist_crank_slider.Initialize(crank, slider, False, chrono.ChVectorD(-2, 0, 0), chrono.ChVectorD(2, 0, 0))
-system.AddLink(dist_crank_slider)
+  #### -------------------------------------------------------------------------
+  #### EXERCISE 1.3
+  #### Replace the distance constraint with joints connecting the rod to the
+  #### crank (use ChLinkLockSpherical) and to the slider (ChLinkUniversal). The
+  #### universal joint's cross should be aligned with the Z and Y global axes.
+  #### -------------------------------------------------------------------------
+
+
+
 
 ## 4. Write the system hierarchy to the console (default log output destination)
 system.ShowHierarchy(chrono.GetLog())
+
 
 ## 5. Prepare visualization with Irrlicht
 ##    Note that Irrlicht uses left-handed frames with Y up.
 
 ## Create the Irrlicht application and set-up the camera.
-application = chronoirr.ChIrrApp(
+application = chronoirr.ChIrrApp (
         system,                               ## pointer to the mechanical system
-        "Slider-Crank Demo 0",                ## title of the Irrlicht window
+        "Slider-Crank Exercise 1",            ## title of the Irrlicht window
         chronoirr.dimension2du(800, 600),     ## window dimension (width x height)
         chronoirr.VerticalDir_Z)              ## up direction
-application.AddTypicalLogo()
-application.AddTypicalSky()
 application.AddTypicalLights()
-application.AddTypicalCamera(
-        chronoirr.vector3df(2, 5, 0),         ## camera location
+application.AddCamera(
+        chronoirr.vector3df(2, -5, 0),        ## camera location
         chronoirr.vector3df(2, 0, 0))         ## "look at" location
 
 ## Let the Irrlicht application convert the visualization assets.
 application.AssetBindAll()
 application.AssetUpdateAll()
+
 ## 6. Perform the simulation.
+
 ## Specify the step-size.
 application.SetTimestep(0.01)
 application.SetTryRealtime(True)
 
 while (application.GetDevice().run()):
+
     ## Initialize the graphical scene.
-    application.BeginScene()
+    application.BeginScene(True, True, chronoirr.SColor(255, 225, 225, 225))
     
     ## Render all visualization objects.
     application.DrawAll()
-
-    ## Render the distance constraint.
-    chronoirr.drawSegment(
-        application.GetVideoDriver(),
-        dist_crank_slider.GetEndPoint1Abs(),
-        dist_crank_slider.GetEndPoint2Abs(),
-        chronoirr.SColor(255, 200, 20, 0), True)
 
     ## Draw an XZ grid at the global origin to add in visualization.
     chronoirr.drawGrid(
         application.GetVideoDriver(), 1, 1, 20, 20,
         chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_from_AngX(chrono.CH_C_PI_2)),
         chronoirr.SColor(255, 80, 100, 100), True)
+    chronoirr.drawAllCOGs(system, application.GetVideoDriver(), 1)
 
     ## Advance simulation by one step.
     application.DoStep()

@@ -120,8 +120,30 @@ slider.AddAsset(col_s)
   ####    visualization: a green box with width and height 0.1
   #### -------------------------------------------------------------------------
 
+## Connecting rod
+rod = chrono.ChBody()
+system.AddBody(rod)
+rod.SetIdentifier(3)
+rod.SetName("rod")
+rod.SetMass(0.5)
+rod.SetMass(0.5)
+rod.SetInertiaXX(chrono.ChVectorD(0.005, 0.1, 0.1))
+rod.SetPos(chrono.ChVectorD(0, 0, 0))
+rod.SetRot(chrono.ChQuaternionD(1, 0, 0, 0))
 
+box_r = chrono.ChBoxShape()
+box_r.GetBoxGeometry().Size = chrono.ChVectorD(2, 0.05, 0.05)
+rod.AddAsset(box_r)
 
+cyl_r = chrono.ChCylinderShape()
+cyl_r.GetCylinderGeometry().p1 = chrono.ChVectorD(2, 0, 0.2)
+cyl_r.GetCylinderGeometry().p2 = chrono.ChVectorD(2, 0, -0.2)
+cyl_r.GetCylinderGeometry().rad = 0.03
+rod.AddAsset(cyl_r)
+
+col_r = chrono.ChColorAsset()
+col_r.SetColor(chrono.ChColor(0.2, 0.6, 0.2))
+rod.AddAsset(col_r)
 
 ## 3. Create joint constraints.
 ##    All joint frames are specified in the global frame.
@@ -129,20 +151,29 @@ slider.AddAsset(col_s)
 ## Define two quaternions representing:
 ## - a rotation of -90 degrees around x (z2y)
 ## - a rotation of +90 degrees around y (z2x)
-z2y = chrono.ChQuaternionD()
-z2x = chrono.ChQuaternionD()
-z2y.Q_from_AngAxis(-chrono.CH_C_PI / 2, chrono.ChVectorD(1, 0, 0))
-z2x.Q_from_AngAxis(chrono.CH_C_PI / 2, chrono.ChVectorD(0, 1, 0))
+z2y = chrono.Q_from_AngX(-chrono.CH_C_PI / 2)
+z2x = chrono.Q_from_AngY(chrono.CH_C_PI / 2)
 
   #### -------------------------------------------------------------------------
   #### EXERCISE 1.2
   #### Replace the revolute joint between ground and crank with a
   #### ChLinkMotorRotationSpeed element and enforce constant angular speed of
-  #### 90 degrees/s.
+  #### 180 degrees/s.
   #### -------------------------------------------------------------------------
 
+# Create a ChFunction object that always returns the constant value PI.
+fun = chrono.ChFunction_Const()
+fun.Set_yconst(chrono.CH_C_PI)
 
-
+# Motor between ground and crank.
+# Note that this also acts as a revolute joint (i.e. it enforces the same
+# kinematic constraints as a revolute joint).  As before, we apply the 'z2y'
+# rotation to align the rotation axis with the Y axis of the global frame.
+engine_ground_crank = chrono.ChLinkMotorRotationSpeed()
+engine_ground_crank.SetName("engine_ground_crank")
+engine_ground_crank.Initialize(ground, crank, chrono.ChFrameD(chrono.ChVectorD(0, 0, 0), z2y))
+engine_ground_crank.SetSpeedFunction(fun)
+system.AddLink(engine_ground_crank)
 
 ## Prismatic joint between ground and slider.
 ## The translational axis of a prismatic joint is along the Z axis of the
@@ -160,12 +191,23 @@ system.AddLink(prismatic_ground_slider)
   #### universal joint's cross should be aligned with the Z and Y global axes.
   #### -------------------------------------------------------------------------
 
+# Spherical joint between crank and rod
+spherical_crank_rod = chrono.ChLinkLockSpherical()
+spherical_crank_rod.SetName("spherical_crank_rod")
+spherical_crank_rod.Initialize(crank, rod, chrono.ChCoordsysD(chrono.ChVectorD(-2, 0, 0), chrono.QUNIT))
+system.AddLink(spherical_crank_rod)
 
-
+# Universal joint between rod and slider.
+# The "cross" of a universal joint is defined using the X and Y axes of the
+# specified joint coordinate frame. Here, we apply the 'z2x' rotation so that
+# the cross is aligned with the Z and Y axes of the global reference frame.
+universal_rod_slider = chrono.ChLinkUniversal()
+universal_rod_slider.SetName("universal_rod_slider")
+universal_rod_slider.Initialize(rod, slider, chrono.ChFrameD(chrono.ChVectorD(2, 0, 0), z2x))
+system.AddLink(universal_rod_slider)
 
 ## 4. Write the system hierarchy to the console (default log output destination)
 system.ShowHierarchy(chrono.GetLog())
-
 
 ## 5. Prepare visualization with Irrlicht
 ##    Note that Irrlicht uses left-handed frames with Y up.
@@ -173,15 +215,13 @@ system.ShowHierarchy(chrono.GetLog())
 ## Create the Irrlicht application and set-up the camera.
 application = chronoirr.ChIrrApp (
         system,                               ## pointer to the mechanical system
-        "Slider-Crank Demo 1",                ## title of the Irrlicht window
+        "Slider-Crank Exercise 1 solution",   ## title of the Irrlicht window
         chronoirr.dimension2du(800, 600),     ## window dimension (width x height)
         chronoirr.VerticalDir_Z)              ## up direction
-application.AddTypicalLogo();
-application.AddTypicalSky();
-application.AddTypicalLights();
-application.AddTypicalCamera(
-        chronoirr.vector3df(2, 5, 0),         ## camera location
-        chronoirr.vector3df(2, 0, 0));        ## "look at" location
+application.AddTypicalLights()
+application.AddCamera(
+        chronoirr.vector3df(2, -5, 0),        ## camera location
+        chronoirr.vector3df(2, 0, 0))         ## "look at" location
 
 ## Let the Irrlicht application convert the visualization assets.
 application.AssetBindAll()
@@ -196,16 +236,17 @@ application.SetTryRealtime(True)
 while (application.GetDevice().run()):
 
     ## Initialize the graphical scene.
-    application.BeginScene()
+    application.BeginScene(True, True, chronoirr.SColor(255, 225, 225, 225))
     
     ## Render all visualization objects.
     application.DrawAll()
 
-    ## Draw an XZ grid at the global origin to add in visualization.
+    ## Draw an XZ grid at the global origin to add in visualization. 
     chronoirr.drawGrid(
         application.GetVideoDriver(), 1, 1, 20, 20,
         chrono.ChCoordsysD(chrono.ChVectorD(0, 0, 0), chrono.Q_from_AngX(chrono.CH_C_PI_2)),
         chronoirr.SColor(255, 80, 100, 100), True)
+    chronoirr.drawAllCOGs(system, application.GetVideoDriver(), 1)
 
     ## Advance simulation by one step.
     application.DoStep()
