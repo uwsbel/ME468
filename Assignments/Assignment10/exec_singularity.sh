@@ -7,4 +7,4 @@
 #SBATCH -o slurm.%j.out
 #SBATCH -e slurm.%j.err
 
-singularity exec --nv -e me468_a10.sif ./a10_script.sh
+singularity run --nv -e me468_a10.sif /bin/bash a10_script.sh
