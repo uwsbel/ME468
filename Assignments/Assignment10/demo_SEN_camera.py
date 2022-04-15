@@ -50,7 +50,7 @@ def main():
     #esh_body.SetBodyFixed(True)
     #physicalSystem.Add(mesh_body)
 
-    mesh_body = chrono.ChBodyEasyBox(1,1,1,1000,False,True)
+    mesh_body = chrono.ChBodyEasyBox(1,1,1,1000,True,False)
     mesh_body.SetBodyFixed(True)
     mphysicalSystem.Add(mesh_body)
 
@@ -74,7 +74,7 @@ def main():
     # Create a camera and add it to the sensor manager
     # ------------------------------------------------
     offset_pose = chrono.ChFrameD(
-        chrono.ChVectorD(-5, 0, 2), chrono.Q_from_AngAxis(2, chrono.ChVectorD(0, 1, 0)))
+        chrono.ChVectorD(-5, 0, 0), chrono.Q_from_AngAxis(0, chrono.ChVectorD(0, 1, 0)))
     cam = sens.ChCameraSensor(
         mesh_body,              # body camera is attached to
         update_rate,            # update rate in Hz
@@ -101,7 +101,7 @@ def main():
     # Renders the image at current point in the filter graph
     if vis:
         cam.PushFilter(sens.ChFilterVisualize(
-            image_width, image_height, "Before Grayscale Filter"))
+            640,360, "Before Grayscale Filter"))
 
     # Provides the host access to this RGBA8 buffer
     cam.PushFilter(sens.ChFilterRGBA8Access())
@@ -114,9 +114,9 @@ def main():
     cam.PushFilter(sens.ChFilterGrayscale())
 
     # Render the buffer again to see the new grayscaled image
-    if vis:
-        cam.PushFilter(sens.ChFilterVisualize(
-            int(image_width / 2), int(image_height / 2), "Grayscale Image"))
+    #if vis:
+    #    cam.PushFilter(sens.ChFilterVisualize(
+    #        int(image_width / 2), int(image_height / 2), "Grayscale Image"))
 
     # Save the grayscaled image at the specified path
     if save:
