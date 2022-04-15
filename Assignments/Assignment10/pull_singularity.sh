@@ -6,4 +6,4 @@
 #SBATCH -o slurm.%j.out
 #SBATCH -e slurm.%j.err
 
-singularity pull me468_a10.sif docker://gitlab.wacc.wisc.edu/me468/dockerimage:hw09
+singularity pull me468_a10.sif docker://gitlab.wacc.wisc.edu/me468/dockerimage:hw10
